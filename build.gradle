@@ -1,14 +1,24 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
+  String androidToolsVersion = '3.2.1'
+  String androidLintVersion = '26.2.1'
+  if (gradle.parent != null) {
+    if (gradle.parent.rootProject.hasProperty("gradleVersion")) {
+      androidToolsVersion = gradle.parent.rootProject.ext.gradleVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("lintVersion")) {
+      androidLintVersion = gradle.parent.rootProject.ext.lintVersion
+    }
+  }
   ext.versions = [
       'minSdk': 9,
       'compileSdk': 28,
 
       'kotlin': '1.2.71',
 
-      'androidPlugin': '3.2.1',
-      'androidTools': '26.2.1',
+      'androidPlugin': "${androidToolsVersion}",
+      'androidTools': "${androidLintVersion}",
 
       'butterknife': '8.8.1',
   ]
