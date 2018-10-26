@@ -4,11 +4,20 @@ apply plugin: 'kotlin'
 targetCompatibility = JavaVersion.VERSION_1_7
 sourceCompatibility = JavaVersion.VERSION_1_7
 
+def isStandaloneBuild = (rootProject.findProject(':AndroidSwiffer') == null)
+
 dependencies {
+if (isStandaloneBuild) {
   compileOnly deps.lint.api
   compileOnly deps.lint.checks
   testImplementation deps.lint.core
   testImplementation deps.lint.tests
+} else {
+  compileOnly "com.android.tools.lint:lint-api:${rootProject.ext.lintVersion}"
+  compileOnly "com.android.tools.lint:lint-checks:${rootProject.ext.lintVersion}"
+  testImplementation "com.android.tools.lint:lint:${rootProject.ext.lintVersion}"
+  testImplementation "com.android.tools.lint:lint-tests:${rootProject.ext.lintVersion}"
+}
 }
 
 jar {

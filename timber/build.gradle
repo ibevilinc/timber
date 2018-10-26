@@ -1,6 +1,9 @@
 apply plugin: 'com.android.library'
-apply plugin: 'checkstyle'
 
+def isStandaloneBuild = (rootProject.findProject(':AndroidSwiffer') == null)
+
+if (isStandaloneBuild) {
+apply plugin: 'checkstyle'
 task checkstyle(type: Checkstyle) {
   configFile rootProject.file('checkstyle.xml')
   source 'src/main/java'
@@ -16,13 +19,23 @@ afterEvaluate {
     check.dependsOn('checkstyle')
   }
 }
+}
 
 android {
+if (isStandaloneBuild) {
   compileSdkVersion versions.compileSdk
+} else {
+  compileSdkVersion rootProject.ext.compileSdkVersion
+}
 
   defaultConfig {
+if (isStandaloneBuild) {
     minSdkVersion versions.minSdk
     consumerProguardFiles 'consumer-proguard-rules.pro'
+} else {
+    minSdkVersion rootProject.ext.minSdkVersion
+    targetSdkVersion rootProject.ext.targetSdkVersion
+}
   }
 
   lintOptions {
@@ -31,12 +44,15 @@ android {
   }
 
   // TODO replace with https://issuetracker.google.com/issues/72050365 once released.
+if (isStandaloneBuild) {
   libraryVariants.all {
     it.generateBuildConfig.enabled = false
   }
 }
+}
 
 dependencies {
+if (isStandaloneBuild) {
   implementation deps.annotations
 
   testImplementation deps.annotations
@@ -45,6 +61,17 @@ dependencies {
   testImplementation deps.robolectric
 
   lintChecks project(':timber-lint')
+} else {
+  implementation 'org.jetbrains:annotations:16.0.2'
+
+  testImplementation 'org.jetbrains:annotations:16.0.2'
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'com.google.truth:truth:0.40'
+  testImplementation 'org.robolectric:robolectric:3.8'
+
+}
 }
 
+if (isStandaloneBuild) {
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+}
