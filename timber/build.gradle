@@ -1,5 +1,7 @@
 apply plugin: 'com.android.library'
 
+project.description = "HP-patched Timber library"
+
 def isStandaloneBuild = (rootProject.findProject(':AndroidSwiffer') == null)
 
 if (isStandaloneBuild) {
