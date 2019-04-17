@@ -35,7 +35,7 @@ if (isStandaloneBuild) {
     minSdkVersion versions.minSdk
     consumerProguardFiles 'consumer-proguard-rules.pro'
 } else {
-    minSdkVersion rootProject.ext.minSdkVersion
+    minSdkVersion getMinSdkVersion(19)
     targetSdkVersion rootProject.ext.targetSdkVersion
 }
   }
