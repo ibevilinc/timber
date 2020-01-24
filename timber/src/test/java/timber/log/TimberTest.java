@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowLog.LogItem;
 
 @RunWith(RobolectricTestRunner.class) //
-@Config(manifest = Config.NONE)
+
 public class TimberTest {
   @Before @After public void setUpAndTearDown() {
     Timber.uprootAll();
