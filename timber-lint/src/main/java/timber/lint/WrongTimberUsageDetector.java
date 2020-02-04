@@ -21,7 +21,13 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jetbrains.uast.UBinaryExpression;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UElement;
@@ -33,15 +39,6 @@ import org.jetbrains.uast.UQualifiedReferenceExpression;
 import org.jetbrains.uast.USimpleNameReferenceExpression;
 import org.jetbrains.uast.UastBinaryOperator;
 import org.jetbrains.uast.util.UastExpressionUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.android.tools.lint.client.api.JavaEvaluatorKt.TYPE_BOOLEAN;
 import static com.android.tools.lint.client.api.JavaEvaluatorKt.TYPE_BYTE;
@@ -62,17 +59,8 @@ import static org.jetbrains.uast.UastBinaryOperator.PLUS;
 import static org.jetbrains.uast.UastBinaryOperator.PLUS_ASSIGN;
 import static org.jetbrains.uast.UastUtils.evaluateString;
 
-/**
- * Lint check for incorrect Timber usage
- */
 public final class WrongTimberUsageDetector extends Detector implements Detector.UastScanner {
-  /**
-   * Constant for getString calls
-   */
   private final static String GET_STRING_METHOD = "getString";
-  /**
-   * Constant regex string for possible logging calls
-   */
   private final static String TIMBER_TREE_LOG_METHOD_REGEXP = "(v|d|i|w|e|wtf)";
 
   @Override public List<String> getApplicableMethodNames() {
@@ -101,12 +89,17 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
       return;
     }
     // Handles Timber.X(..) and Timber.tag(..).X(..) where X in (v|d|i|w|e|wtf).
-    if (evaluator.isMemberInClass(method, "timber.log.Timber") //
-            || evaluator.isMemberInClass(method, "timber.log.Timber.Tree")) {
+    if (isTimberLogMethod(method, evaluator)) {
       checkMethodArguments(context, call);
       checkFormatArguments(context, call);
       checkExceptionLogging(context, call);
     }
+  }
+
+  private boolean isTimberLogMethod(PsiMethod method, JavaEvaluator evaluator) {
+    return evaluator.isMemberInClass(method, "timber.log.Timber")
+            || evaluator.isMemberInClass(method, "timber.log.Timber.Companion")
+            || evaluator.isMemberInClass(method, "timber.log.Timber.Tree");
   }
 
   private void checkNestedStringFormat(JavaContext context, UCallExpression call) {
@@ -121,7 +114,7 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
         UCallExpression maybeTimberLogCall = (UCallExpression) current;
         JavaEvaluator evaluator = context.getEvaluator();
         PsiMethod psiMethod = maybeTimberLogCall.resolve();
-        if (psiMethod != null && Pattern.matches(TIMBER_TREE_LOG_METHOD_REGEXP, psiMethod.getName())
+        if (Pattern.matches(TIMBER_TREE_LOG_METHOD_REGEXP, psiMethod.getName())
                 && evaluator.isMemberInClass(psiMethod, "timber.log.Timber")) {
           LintFix fix = quickFixIssueFormat(call);
           context.report(ISSUE_FORMAT, call, context.getLocation(call),
@@ -138,7 +131,7 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
     String tag = evaluateString(context, argument, true);
     if (tag != null && tag.length() > 23) {
       String message =
-              String.format(Locale.US,"The logging tag can be at most 23 characters, was %1$d (%2$s)",
+              String.format("The logging tag can be at most 23 characters, was %1$d (%2$s)",
                       tag.length(), tag);
       LintFix fix = quickFixIssueTagLength(argument, tag);
       context.report(ISSUE_TAG_LENGTH, argument, context.getLocation(argument), message, fix);
@@ -171,7 +164,7 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
     int formatArgumentCount = getFormatArgumentCount(formatString);
     int passedArgCount = numArguments - startIndexOfArguments;
     if (formatArgumentCount < passedArgCount) {
-      context.report(ISSUE_ARG_COUNT, call, context.getLocation(call), String.format(Locale.US,
+      context.report(ISSUE_ARG_COUNT, call, context.getLocation(call), String.format(
               "Wrong argument count, format string `%1$s` requires "
                       + "`%2$d` but format call supplies `%3$d`", formatString, formatArgumentCount,
               passedArgCount));
@@ -191,7 +184,7 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
       if (argumentIndex != numArguments) {
         argument = arguments.get(argumentIndex++);
       } else {
-        context.report(ISSUE_ARG_COUNT, call, context.getLocation(call), String.format(Locale.US,
+        context.report(ISSUE_ARG_COUNT, call, context.getLocation(call), String.format(
                 "Wrong argument count, format string `%1$s` requires "
                         + "`%2$d` but format call supplies `%3$d`", formatString, formatArgumentCount,
                 passedArgCount));
@@ -241,9 +234,10 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
           case 'D':
           case 'F':
           case 'c':
-            valid = type == Integer.TYPE || type == Calendar.class || type == Date.class;
+            valid = type == Integer.TYPE || type == Calendar.class || type == Date.class
+                    || type == Long.TYPE;
             if (!valid) {
-              String message = String.format(Locale.US,
+              String message = String.format(
                       "Wrong argument type for date formatting argument '#%1$d' "
                               + "in `%2$s`: conversion is '`%3$s`', received `%4$s` "
                               + "(argument #%5$d in method call)", i + 1, formatString, formatType,
@@ -252,7 +246,7 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
             }
             break;
           default:
-            String message = String.format(Locale.US,"Wrong suffix for date format '#%1$d' "
+            String message = String.format("Wrong suffix for date format '#%1$d' "
                             + "in `%2$s`: conversion is '`%3$s`', received `%4$s` "
                             + "(argument #%5$d in method call)", i + 1, formatString, formatType,
                     type.getSimpleName(), startIndexOfArguments + i + 1);
@@ -297,7 +291,7 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
           valid = true;
       }
       if (!valid) {
-        String message = String.format(Locale.US,"Wrong argument type for formatting argument '#%1$d' "
+        String message = String.format("Wrong argument type for formatting argument '#%1$d' "
                         + "in `%2$s`: conversion is '`%3$s`', received `%4$s` "
                         + "(argument #%5$d in method call)", i + 1, formatString, formatType,
                 type.getSimpleName(), startIndexOfArguments + i + 1);
@@ -317,15 +311,12 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
         return null;
       }
       String methodName = method.getName();
-      if (GET_STRING_METHOD.equals(methodName)) {
+      if (methodName.equals(GET_STRING_METHOD)) {
         return String.class;
       }
     } else if (expression instanceof PsiLiteralExpression) {
       PsiLiteralExpression literalExpression = (PsiLiteralExpression) expression;
       PsiType expressionType = literalExpression.getType();
-      if (expressionType == null) {
-        expressionType = PsiType.NULL;
-      }
       if (isString(expressionType)) {
         return String.class;
       } else if (expressionType == PsiType.INT) {
@@ -613,6 +604,10 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
       if (operator == PLUS || operator == PLUS_ASSIGN) {
         Class argumentType = getType(binaryExpression);
         if (argumentType == String.class) {
+          if (isStringLiteral(binaryExpression.getLeftOperand())
+                  && isStringLiteral(binaryExpression.getRightOperand())) {
+            return false;
+          }
           LintFix fix = quickFixIssueBinary(binaryExpression);
           context.report(ISSUE_BINARY, call, context.getLocation(element),
                   "Replace String concatenation with Timber's string formatting", fix);
@@ -694,23 +689,22 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
 
   private LintFix quickFixIssueThrowable(UCallExpression call, List<UExpression> arguments,
                                          UExpression throwable) {
-    StringBuilder rearrangedArgs = new StringBuilder(throwable.asSourceString());
+    String rearrangedArgs = throwable.asSourceString();
     for (UExpression arg : arguments) {
       if (arg != throwable) {
-        rearrangedArgs.append(", ").append(arg.asSourceString());
+        rearrangedArgs += (", " + arg.asSourceString());
       }
     }
     return fix().replace() //
-            .pattern("\\." + call.getMethodName() + "\\((.*)\\)").with(rearrangedArgs.toString()).build();
+            .pattern("\\." + call.getMethodName() + "\\((.*)\\)").with(rearrangedArgs).build();
   }
 
   private LintFix quickFixIssueBinary(UBinaryExpression binaryExpression) {
     UExpression leftOperand = binaryExpression.getLeftOperand();
     UExpression rightOperand = binaryExpression.getRightOperand();
-    boolean isLeftLiteral = (leftOperand instanceof ULiteralExpression) &&
-            ((ULiteralExpression)leftOperand).isString();
-    boolean isRightLiteral = (rightOperand instanceof ULiteralExpression) &&
-            ((ULiteralExpression)rightOperand).isString();
+
+    boolean isLeftLiteral = isStringLiteral(leftOperand);
+    boolean isRightLiteral = isStringLiteral(rightOperand);
 
     // "a" + "b" => "ab"
     if (isLeftLiteral && isRightLiteral) {
@@ -760,6 +754,10 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
             .build();
   }
 
+  private boolean isStringLiteral(UExpression arg) {
+    return (arg instanceof ULiteralExpression) && ((ULiteralExpression)arg).isString();
+  }
+
   static Issue[] getIssues() {
     return new Issue[] {
             ISSUE_LOG, ISSUE_FORMAT, ISSUE_THROWABLE, ISSUE_BINARY, ISSUE_ARG_COUNT, ISSUE_ARG_TYPES,
@@ -767,7 +765,11 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
     };
   }
 
-
+  public static final Issue ISSUE_LOG =
+          Issue.create("LogNotTimber", "Logging call to Log instead of Timber",
+                  "Since Timber is included in the project, it is likely that calls to Log should instead"
+                          + " be going to Timber.", Category.MESSAGES, 5, Severity.WARNING,
+                  new Implementation(WrongTimberUsageDetector.class, Scope.JAVA_FILE_SCOPE));
   public static final Issue ISSUE_FORMAT =
           Issue.create("StringFormatInTimber", "Logging call with Timber contains String#format()",
                   "Since Timber handles String.format automatically, you may not use String#format().",
@@ -801,10 +803,5 @@ public final class WrongTimberUsageDetector extends Detector implements Detector
           Issue.create("TimberExceptionLogging", "Exception Logging", "Explicitly including the"
                           + " exception message is redundant when supplying an exception to log.",
                   Category.CORRECTNESS, 3, Severity.WARNING,
-                  new Implementation(WrongTimberUsageDetector.class, Scope.JAVA_FILE_SCOPE));
-  public static final Issue ISSUE_LOG =
-          Issue.create("LogNotTimber", "Logging call to Log instead of Timber",
-                  "Since Timber is included in the project, it is likely that calls to Log should instead"
-                          + " be going to Timber.", Category.MESSAGES, 5, Severity.WARNING,
                   new Implementation(WrongTimberUsageDetector.class, Scope.JAVA_FILE_SCOPE));
 }
