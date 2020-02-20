@@ -28,6 +28,7 @@ if (isStandaloneBuild) {
   compileSdkVersion versions.compileSdk
 } else {
   compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.projectBuildTools
 }
 
   defaultConfig {
