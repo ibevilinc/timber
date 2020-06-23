@@ -24,10 +24,14 @@ import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowLog.LogItem;
 
 @RunWith(RobolectricTestRunner.class) //
-
+@Config(sdk = Build.VERSION_CODES.P)
 public class TimberTest {
   @Before @After public void setUpAndTearDown() {
     Timber.uprootAll();
+  }
+  @Before public void setupShadowLog() {
+    ShadowLog.setupLogging();
+    ShadowLog.clear();
   }
 
   // NOTE: This class references the line number. Keep it at the top so it does not change.
@@ -41,7 +45,7 @@ public class TimberTest {
     Timber.d("Test");
 
     assertLog()
-        .hasDebugMessage("TimberTest:41", "Test")
+        .hasDebugMessage("TimberTest:45", "Test")
         .hasNoMoreMessages();
   }
 
@@ -246,8 +250,14 @@ public class TimberTest {
       }
     }
     new ClassNameThatIsReallyReallyReallyLong();
+    String expectedValue;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      expectedValue = "TimberTest$1ClassNameThatIsReallyReallyReallyLong";
+    } else {
+      expectedValue = "TimberTest$1ClassNameTh";
+    }
     assertLog()
-        .hasInfoMessage("TimberTest$1ClassNameTh", "Hello, world!")
+        .hasInfoMessage(expectedValue, "Hello, world!")
         .hasNoMoreMessages();
   }
 
