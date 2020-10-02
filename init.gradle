@@ -71,5 +71,9 @@ ext.deps = [
     junit: "junit:junit:${versions.junit}",
     truth: "com.google.truth:truth:${versions.truth}",
     robolectric: "org.robolectric:robolectric:${versions.robolectric}",
-    gradleVersions: "com.github.ben-manes:gradle-versions-plugin:${versions.gradleVersions}"
+    gradleVersions: "com.github.ben-manes:gradle-versions-plugin:${versions.gradleVersions}",
+    'kotlin': [
+      'stdlib': "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+      'reflect':"org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}"
+    ]
 ]
