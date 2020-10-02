@@ -2,42 +2,40 @@ apply plugin: 'com.android.library'
 
 project.description = "HP-patched Timber library"
 
-def isStandaloneBuild = (rootProject.findProject(':AndroidSwiffer') == null)
+def standalone = (gradle.parent == null &&
+    gradle.rootProject.projectDir.equals(this.projectDir.getParentFile()))
 
-if (isStandaloneBuild) {
-apply plugin: 'checkstyle'
-task checkstyle(type: Checkstyle) {
-  configFile rootProject.file('checkstyle.xml')
-  source 'src/main/java'
-  ignoreFailures false
-  showViolations true
-  include '**/*.java'
+def lintProject = findProject(':timber-lint')
 
-  classpath = files()
+if (!standalone && (gradle.parent == null)) {
+  apply from: '../init.gradle'
 }
 
-afterEvaluate {
-  if (project.tasks.findByName('check')) {
-    check.dependsOn('checkstyle')
-  }
-}
-}
+//apply plugin: 'checkstyle'
+//task checkstyle(type: Checkstyle) {
+//  configFile project.parentDir().file('checkstyle.xml')
+//  source 'src/main/java'
+//  ignoreFailures false
+//  showViolations true
+//  include '**/*.java'
+//
+//  classpath = files()
+//}
+
+//afterEvaluate {
+//  if (project.tasks.findByName('check')) {
+//    check.dependsOn('checkstyle')
+//  }
+//}
 
 android {
-if (isStandaloneBuild) {
+  
   compileSdkVersion versions.compileSdk
-} else {
-  compileSdkVersion rootProject.ext.compileSdkVersion
-  buildToolsVersion rootProject.ext.projectBuildTools
-}
-
+  buildToolsVersion versions.buildTools
+   
   defaultConfig {
-if (isStandaloneBuild) {
     minSdkVersion versions.minSdk
-} else {
-    minSdkVersion 19
-    targetSdkVersion rootProject.ext.targetSdkVersion
-}
+    targetSdkVersion versions.compileSdk
     consumerProguardFiles 'consumer-proguard-rules.pro'
   }
 
@@ -45,17 +43,18 @@ if (isStandaloneBuild) {
     textReport true
     textOutput 'stdout'
   }
-
-  // TODO replace with https://issuetracker.google.com/issues/72050365 once released.
-if (isStandaloneBuild) {
-  libraryVariants.all {
-    it.generateBuildConfig.enabled = false
+  buildFeatures {
+    buildConfig  = false
+    viewBinding  = false
+    dataBinding  = false
+    aidl         = false
+    renderScript = false
+    resValues    = false
+    shaders      = false
   }
-}
 }
 
 dependencies {
-if (isStandaloneBuild) {
   implementation deps.annotations
 
   testImplementation deps.annotations
@@ -63,20 +62,11 @@ if (isStandaloneBuild) {
   testImplementation deps.truth
   testImplementation deps.robolectric
 
-} else {
-  implementation "org.jetbrains:annotations:${rootProject.ext.jetbrainsAnnotationsVersion}"
-
-  testImplementation "org.jetbrains:annotations:${rootProject.ext.jetbrainsAnnotationsVersion}"
-  testImplementation "junit:junit:${rootProject.ext.junitVersion}"
-  testImplementation "com.google.truth:truth:1.0.1"
-  testImplementation "org.robolectric:robolectric:4.3.1"
-
-}
-  if (rootProject.findProject(':timber-lint') != null) {
-      lintPublish project(':timber-lint')
+  if (lintProject != null) {
+      lintPublish lintProject
   }
 }
 
-if (isStandaloneBuild) {
-apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+if (standalone) {
+    apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 }

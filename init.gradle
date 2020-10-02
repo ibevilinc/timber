@@ -1,0 +1,78 @@
+ext.versions = [
+    'minSdk': 14,
+    'compileSdk': 30,
+    'targetSdk': 30,
+    'buildTools': '30.0.2',
+
+    'kotlin': '1.4.10',
+
+    'androidPlugin': '4.0.1',
+    'androidTools': '27.0.1',
+
+    'butterknife': '8.8.1',
+    'annotations': '20.1.0',
+    'junit': '4.13',
+    'truth': '1.0.1',
+    'robolectric': '4.4',
+    'gradleVersions': '0.33.0'
+]
+
+if (gradle.parent != null) {
+    if (gradle.parent.rootProject.hasProperty("minSdkVersion")) {
+        versions.minSdk = gradle.parent.rootProject.ext.minSdkVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("compileSdkVersion")) {
+        versions.compileSdk = gradle.parent.rootProject.ext.compileSdkVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("targetSdkVersion")) {
+        versions.compileSdk = gradle.parent.rootProject.ext.targetSdkVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("projectBuildTools")) {
+        versions.buildTools = gradle.parent.rootProject.ext.projectBuildTools
+    }
+    if (gradle.parent.rootProject.hasProperty("kotlinVersion")) {
+        versions.kotlin = gradle.parent.rootProject.ext.kotlinVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("gradleVersion")) {
+        versions.androidPlugin = gradle.parent.rootProject.ext.gradleVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("lintVersion")) {
+        versions.androidTools = gradle.parent.rootProject.ext.lintVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("jetbrainsAnnotationsVersion")) {
+        versions.annotations = gradle.parent.rootProject.ext.jetbrainsAnnotationsVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("junitVersion")) {
+        versions.junit = gradle.parent.rootProject.ext.junitVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("truthVersion")) {
+        versions.truth = gradle.parent.rootProject.ext.truthVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("robolectric")) {
+        versions.robolectric = gradle.parent.rootProject.ext.robolectric
+    }
+    if (gradle.parent.rootProject.hasProperty("gradleVersionsPluginVersion")) {
+        versions.gradleVersions = gradle.parent.rootProject.ext.gradleVersionsPluginVersion
+    }
+}
+
+ext.deps = [
+    androidPlugin: "com.android.tools.build:gradle:${versions.androidPlugin}",
+    kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
+    'butterknife': [
+        'runtime': "com.jakewharton:butterknife:${versions.butterknife}",
+        'compiler': "com.jakewharton:butterknife-compiler:${versions.butterknife}"
+    ],
+    'lint': [
+        'core': "com.android.tools.lint:lint:${versions.androidTools}",
+        'api': "com.android.tools.lint:lint-api:${versions.androidTools}",
+        'checks': "com.android.tools.lint:lint-checks:${versions.androidTools}",
+        'tests': "com.android.tools.lint:lint-tests:${versions.androidTools}",
+    ],
+    annotations: "org.jetbrains:annotations:${versions.annotations}",
+
+    junit: "junit:junit:${versions.junit}",
+    truth: "com.google.truth:truth:${versions.truth}",
+    robolectric: "org.robolectric:robolectric:${versions.robolectric}",
+    gradleVersions: "com.github.ben-manes:gradle-versions-plugin:${versions.gradleVersions}"
+]

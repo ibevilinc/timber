@@ -1,47 +1,7 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
-  String androidToolsVersion = '3.5.3'
-  String androidLintVersion = '26.5.3'
-  if (gradle.parent != null) {
-    if (gradle.parent.rootProject.hasProperty("gradleVersion")) {
-      androidToolsVersion = gradle.parent.rootProject.ext.gradleVersion
-    }
-    if (gradle.parent.rootProject.hasProperty("lintVersion")) {
-      androidLintVersion = gradle.parent.rootProject.ext.lintVersion
-    }
-  }
-  ext.versions = [
-      'minSdk': 14,
-      'compileSdk': 29,
-
-      'kotlin': '1.3.61',
-
-      'androidPlugin': "${androidToolsVersion}",
-      'androidTools': "${androidLintVersion}",
-
-      'butterknife': '8.8.1',
-  ]
-
-  ext.deps = [
-      androidPlugin: "com.android.tools.build:gradle:${versions.androidPlugin}",
-      kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-      'butterknife': [
-          'runtime': "com.jakewharton:butterknife:${versions.butterknife}",
-          'compiler': "com.jakewharton:butterknife-compiler:${versions.butterknife}"
-      ],
-      'lint': [
-          'core': "com.android.tools.lint:lint:${versions.androidTools}",
-          'api': "com.android.tools.lint:lint-api:${versions.androidTools}",
-          'checks': "com.android.tools.lint:lint-checks:${versions.androidTools}",
-          'tests': "com.android.tools.lint:lint-tests:${versions.androidTools}",
-      ],
-      annotations: 'org.jetbrains:annotations:18.0.0',
-
-      junit: 'junit:junit:4.12',
-      truth: 'com.google.truth:truth:0.40',
-      robolectric: 'org.robolectric:robolectric:3.8',
-  ]
+  apply from: 'init.gradle'
 
   repositories {
     jcenter()
@@ -51,7 +11,7 @@ buildscript {
   dependencies {
     classpath deps.androidPlugin
     classpath deps.kotlinPlugin
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+    classpath deps.gradleVersions
   }
 }
 
