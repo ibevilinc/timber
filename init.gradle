@@ -18,9 +18,6 @@ ext.versions = [
 ]
 
 if (gradle.parent != null) {
-    if (gradle.parent.rootProject.hasProperty("minSdkVersion")) {
-        versions.minSdk = gradle.parent.rootProject.ext.minSdkVersion
-    }
     if (gradle.parent.rootProject.hasProperty("compileSdkVersion")) {
         versions.compileSdk = gradle.parent.rootProject.ext.compileSdkVersion
     }
