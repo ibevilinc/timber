@@ -25,6 +25,6 @@ dependencies {
 compileKotlin {
   kotlinOptions {
     // Lint runs with 1.3 still, so we need to emit 1.3-compatible code
-    languageVersion = "1.3"
+    languageVersion = "1.4"
   }
 }
