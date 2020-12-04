@@ -75,3 +75,9 @@ dependencies {
 if (standalone) {
     apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
 }
+
+tasks.withType(JavaCompile).configureEach {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(versions.javaLanguageVersion)
+    }
+}

@@ -3,9 +3,6 @@ apply plugin: 'kotlin'
 
 project.description = "HP-patched Timber Lint checks"
 
-targetCompatibility = JavaVersion.VERSION_1_8
-sourceCompatibility = JavaVersion.VERSION_1_8
-
 def standalone = (gradle.parent == null &&
     gradle.rootProject.projectDir.equals(this.projectDir.getParentFile()))
 
@@ -22,9 +19,18 @@ dependencies {
   testImplementation deps.lint.tests
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(versions.javaLanguageVersion)
+    }
+}
+
 compileKotlin {
-  kotlinOptions {
-    // Lint runs with 1.3 still, so we need to emit 1.3-compatible code
-    languageVersion = "1.4"
-  }
+    def compiler = javaToolchains.compilerFor {
+        languageVersion.set(JavaLanguageVersion.of(versions.javaLanguageVersion))
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+        jdkHome = compiler.get().metadata.installationPath.asFile.absolutePath
+    }
 }

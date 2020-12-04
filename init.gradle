@@ -14,7 +14,8 @@ ext.versions = [
     'junit': '4.13',
     'truth': '1.0.1',
     'robolectric': '4.4',
-    'gradleVersions': '0.33.0'
+    'gradleVersions': '0.33.0',
+    'javaLanguageVersion': 8
 ]
 
 if (gradle.parent != null) {
@@ -50,6 +51,9 @@ if (gradle.parent != null) {
     }
     if (gradle.parent.rootProject.hasProperty("gradleVersionsPluginVersion")) {
         versions.gradleVersions = gradle.parent.rootProject.ext.gradleVersionsPluginVersion
+    }
+    if (gradle.parent.rootProject.hasProperty("javaLanguageVersion")) {
+        versions.javaLanguageVersion = gradle.parent.rootProject.ext.javaLanguageVersion
     }
 }
 
