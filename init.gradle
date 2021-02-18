@@ -23,7 +23,7 @@ if (gradle.parent != null) {
         versions.compileSdk = gradle.parent.rootProject.ext.compileSdkVersion
     }
     if (gradle.parent.rootProject.hasProperty("targetSdkVersion")) {
-        versions.compileSdk = gradle.parent.rootProject.ext.targetSdkVersion
+        versions.targetSdk = gradle.parent.rootProject.ext.targetSdkVersion
     }
     if (gradle.parent.rootProject.hasProperty("projectBuildTools")) {
         versions.buildTools = gradle.parent.rootProject.ext.projectBuildTools

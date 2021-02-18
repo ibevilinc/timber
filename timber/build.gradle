@@ -35,7 +35,7 @@ android {
    
   defaultConfig {
     minSdkVersion versions.minSdk
-    targetSdkVersion versions.compileSdk
+    targetSdkVersion versions.targetSdk
     consumerProguardFiles 'consumer-proguard-rules.pro'
   }
 
