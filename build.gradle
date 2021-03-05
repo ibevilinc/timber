@@ -4,8 +4,9 @@ buildscript {
   apply from: 'init.gradle'
 
   repositories {
-    jcenter()
     google()
+    mavenCentral()
+    gradlePluginPortal()
   }
 
   dependencies {
@@ -17,9 +18,9 @@ buildscript {
 
 subprojects {
   repositories {
-    mavenCentral()
-    jcenter()
     google()
+    mavenCentral()
+    gradlePluginPortal()
   }
 
   tasks.withType(Test) {
