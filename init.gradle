@@ -4,18 +4,18 @@ ext.versions = [
     'targetSdk': 30,
     'buildTools': '30.0.3',
 
-    'kotlin': '1.4.31',
+    'kotlin': '1.5.20',
 
-    'androidPlugin': '4.1.2',
-    'androidTools': '27.1.2',
+    'androidPlugin': '4.2.1',
+    'androidTools': '27.2.1',
 
     'butterknife': '8.8.1',
-    'annotations': '20.1.0',
-    'junit': '4.13.1',
-    'truth': '1.0.1',
+    'annotations': '21.0.1',
+    'junit': '4.13.2',
+    'truth': '1.1.2',
     'robolectric': '4.4',
-    'gradleVersions': '0.38.0',
-    'javaLanguageVersion': 8
+    'gradleVersions': '0.39.0',
+    'javaLanguageVersion': 11
 ]
 
 if (gradle.parent != null) {
